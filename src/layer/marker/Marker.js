@@ -55,9 +55,10 @@ L.Marker = L.Layer.extend({
 	},
 
 	setLatLng: function (latlng) {
+		var oldLatLng = this._latlng;
 		this._latlng = L.latLng(latlng);
 		this.update();
-		return this.fire('move', {latlng: this._latlng});
+		return this.fire('move', { oldLatLng: oldLatLng, latlng: this._latlng });
 	},
 
 	setZIndexOffset: function (offset) {
@@ -228,7 +229,9 @@ L.Marker = L.Layer.extend({
 			type = 'click';
 		}
 
-		this._map._fireMouseEvent(this, e, type, true, this._latlng);
+		if (this._map) {
+			this._map._fireMouseEvent(this, e, type, true, this._latlng);
+		}
 	},
 
 	setOpacity: function (opacity) {

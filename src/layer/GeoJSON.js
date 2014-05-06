@@ -50,10 +50,11 @@ L.GeoJSON = L.FeatureGroup.extend({
 		// reset any custom styles
 		layer.options = layer.defaultOptions;
 		this._setLayerStyle(layer, this.options.style);
+		return this;
 	},
 
 	setStyle: function (style) {
-		this.eachLayer(function (layer) {
+		return this.eachLayer(function (layer) {
 			this._setLayerStyle(layer, style);
 		}, this);
 	},
@@ -70,27 +71,23 @@ L.GeoJSON = L.FeatureGroup.extend({
 
 L.extend(L.GeoJSON, {
 	geometryToLayer: function (geojson, options) {
+
 		var geometry = geojson.type === 'Feature' ? geojson.geometry : geojson,
 		    coords = geometry.coordinates,
 		    layers = [],
-		    coordsToLatLng = options.coordsToLatLng || this.coordsToLatLng,
+		    pointToLayer = options && options.pointToLayer,
+		    coordsToLatLng = options && options.coordsToLatLng || this.coordsToLatLng,
 		    latlng, latlngs, i, len;
 
 		switch (geometry.type) {
 		case 'Point':
 			latlng = coordsToLatLng(coords);
-
-			return options.pointToLayer ?
-					options.pointToLayer(geojson, latlng) :
-					new L.Marker(latlng);
+			return pointToLayer ? pointToLayer(geojson, latlng) : new L.Marker(latlng);
 
 		case 'MultiPoint':
 			for (i = 0, len = coords.length; i < len; i++) {
 				latlng = coordsToLatLng(coords[i]);
-
-				layers.push(options.pointToLayer ?
-						options.pointToLayer(geojson, latlng) :
-						new L.Marker(latlng));
+				layers.push(pointToLayer ? pointToLayer(geojson, latlng) : new L.Marker(latlng));
 			}
 			return new L.FeatureGroup(layers);
 
@@ -130,7 +127,7 @@ L.extend(L.GeoJSON, {
 		for (var i = 0, len = coords.length, latlng; i < len; i++) {
 			latlng = levelsDeep ?
 			        this.coordsToLatLngs(coords[i], levelsDeep - 1, coordsToLatLng) :
-			        coordsToLatLng(coords[i]);
+			        (coordsToLatLng || this.coordsToLatLng)(coords[i]);
 
 			latlngs.push(latlng);
 		}

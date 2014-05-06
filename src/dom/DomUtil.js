@@ -130,27 +130,20 @@ L.DomUtil = {
 		return false;
 	},
 
-	getTranslateString: function (point) {
-		// on WebKit browsers, using translate3d instead of translate makes animation smoother
-		// as it ensures HW accel is used. Firefox doesn't care (same speed either way).
-		var is3d = L.Browser.webkit3d;
+	setTransform: function (el, offset, scale) {
+		var pos = offset || new L.Point(0, 0);
 
-		return 'translate' + (is3d ? '3d(' : '(') +
-				point.x + 'px,' +
-				point.y + 'px' + (is3d ? ',0)' : ')');
+		el.style[L.DomUtil.TRANSFORM] =
+			'translate3d(' + pos.x + 'px,' + pos.y + 'px' + ',0)' + (scale ? ' scale(' + scale + ')' : '');
 	},
 
-	getScaleString: function (scale, origin) {
-		return L.DomUtil.getTranslateString(origin.multiplyBy(1 - scale)) + ' scale(' + scale + ') ';
-	},
-
-	setPosition: function (el, point, disable3D) { // (HTMLElement, Point[, Boolean])
+	setPosition: function (el, point, no3d) { // (HTMLElement, Point[, Boolean])
 
 		// jshint camelcase: false
 		el._leaflet_pos = point;
 
-		if (!disable3D && L.Browser.any3d) {
-			el.style[L.DomUtil.TRANSFORM] =  L.DomUtil.getTranslateString(point);
+		if (L.Browser.any3d && !no3d) {
+			L.DomUtil.setTransform(el, point);
 		} else {
 			el.style.left = point.x + 'px';
 			el.style.top = point.y + 'px';
